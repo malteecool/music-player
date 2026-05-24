@@ -1,17 +1,22 @@
-import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Image, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, fontSizes, radii } from '../theme';
 import type { Video } from '../types';
+
+type DownloadStatus = 'completed' | 'converting' | 'queued' | 'failed' | null;
 
 type Props = {
   video: Video;
   onPress: () => void;
   isActive?: boolean;
+  downloadStatus?: DownloadStatus;
+  onDownload?: () => void;
 };
 
 export const THUMB_W = 112;
 export const THUMB_H = 63; // 16:9
 
-export default function VideoRow({ video, onPress, isActive = false }: Props) {
+export default function VideoRow({ video, onPress, isActive = false, downloadStatus, onDownload }: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -47,6 +52,21 @@ export default function VideoRow({ video, onPress, isActive = false }: Props) {
           <View style={styles.activePulseDot} />
         </View>
       )}
+      <View style={styles.actionButton}>
+        {downloadStatus === 'converting' ? (
+          <ActivityIndicator size="small" color={colors.accent} />
+        ) : downloadStatus === 'completed' ? (
+          <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
+        ) : downloadStatus === 'failed' ? (
+          <Pressable onPress={onDownload}>
+            <Ionicons name="alert-circle" size={20} color="#FF6B6B" />
+          </Pressable>
+        ) : (
+          <Pressable onPress={onDownload}>
+            <Ionicons name="download-outline" size={20} color={colors.textMuted} />
+          </Pressable>
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -135,5 +155,12 @@ const styles = StyleSheet.create({
     height: 7,
     borderRadius: 4,
     backgroundColor: colors.accent,
+  },
+  actionButton: {
+    marginLeft: spacing.sm,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
